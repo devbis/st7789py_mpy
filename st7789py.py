@@ -164,7 +164,7 @@ class ST77xx:
     def _set_color_mode(self, mode):
         self.write(ST77XX_COLMOD, bytes([mode & 0x77]))
 
-    def init_display(self, *args, **kwargs):
+    def init(self, *args, **kwargs):
         self.hard_reset()
         self.soft_reset()
         self.sleep_mode(False)
@@ -218,29 +218,29 @@ class ST77xx:
         self._set_rows(y0, y1)
         self.write(ST77XX_RAMWR)
 
-    def draw_fast_vline(self, x0, y0, length, color):
-        self.fill_rect(x0, y0, 1, length, color)
+    def vline(self, x, y, length, color):
+        self.fill_rect(x, y, 1, length, color)
 
-    def draw_fast_hline(self, x0, y0, length, color):
-        self.fill_rect(x0, y0, length, 1, color)
+    def hline(self, x, y, length, color):
+        self.fill_rect(x, y, length, 1, color)
 
-    def draw_pixel(self, x, y, color):
+    def pixel(self, x, y, color):
         self.set_window(x, y, x, y)
         self.write(None, self._encode_pixel(color))
 
-    def blit_buffer(self, buffer, x, y, w, h):
-        self.set_window(x, y, x + w - 1, y + h - 1)
+    def blit_buffer(self, buffer, x, y, width, height):
+        self.set_window(x, y, x + width - 1, y + height - 1)
         self.write(None, buffer)
 
     def rect(self, x, y, w, h, color):
-        self.draw_fast_hline(x, y, w, color)
-        self.draw_fast_vline(x, y, h, color)
-        self.draw_fast_vline(x + w, y, h, color)
-        self.draw_fast_hline(x, y + h, w, color)
+        self.hline(x, y, w, color)
+        self.vline(x, y, h, color)
+        self.vline(x + w - 1, y, h, color)
+        self.hline(x, y + h - 1, w, color)
 
-    def fill_rect(self, x, y, w, h, color):
-        self.set_window(x, y, x + w - 1, y + h - 1)
-        chunks, rest = divmod(w * h, _BUFFER_SIZE)
+    def fill_rect(self, x, y, width, height, color):
+        self.set_window(x, y, x + width - 1, y + height - 1)
+        chunks, rest = divmod(width * height, _BUFFER_SIZE)
         pixel = self._encode_pixel(color)
         self.dc_high()
         if chunks:
@@ -271,9 +271,9 @@ class ST77xx:
             ystep = -1
         while x0 <= x1:
             if steep:
-                self.draw_pixel(y0, x0, color)
+                self.pixel(y0, x0, color)
             else:
-                self.draw_pixel(x0, y0, color)
+                self.pixel(x0, y0, color)
             err -= dy
             if err < 0:
                 y0 += ystep
@@ -282,8 +282,8 @@ class ST77xx:
 
 
 class ST7789(ST77xx):
-    def init_display(self, *, color_mode=ColorMode_65K | ColorMode_16bit):
-        super().init_display()
+    def init(self, *, color_mode=ColorMode_65K | ColorMode_16bit):
+        super().init()
         self._set_color_mode(color_mode)
         delay_ms(50)
         self._set_mem_access_mode(4, True, True, False)

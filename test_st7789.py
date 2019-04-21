@@ -3,7 +3,7 @@
 import random
 
 import machine
-import st7789
+import st7789py as st7789
 import time
 
 
@@ -14,7 +14,7 @@ def main():
         reset=machine.Pin(5, machine.Pin.OUT),
         dc=machine.Pin(2, machine.Pin.OUT),
     )
-    display.init_display()
+    display.init()
 
     while True:
         display.fill(
