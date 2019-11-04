@@ -247,7 +247,8 @@ class ST77xx:
             data = pixel * _BUFFER_SIZE
             for _ in range(chunks):
                 self.write(None, data)
-        self.write(None, pixel * rest)
+        if rest:
+            self.write(None, pixel * rest)
 
     def fill(self, color):
         self.fill_rect(0, 0, self.width, self.height, color)
