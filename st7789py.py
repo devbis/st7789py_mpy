@@ -200,14 +200,14 @@ class ST77xx:
         return struct.pack(_ENCODE_PIXEL, color)
 
     def _set_columns(self, start, end):
-        if start > end or end > self.width:
+        if start > end or end >= self.width:
             return
         start += self.start_x
         end += self.start_x
         self.write(ST77XX_CASET, self._encode_pos(start, end))
 
     def _set_rows(self, start, end):
-        if start > end or end > self.height:
+        if start > end or end >= self.height:
             return
         start += self.start_y
         end += self.start_y
