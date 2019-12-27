@@ -79,7 +79,8 @@ def color565(r, g=0, b=0):
 
 
 class ST77xx:
-    def __init__(self, spi, width, height, reset, dc, cs=None, backlight=None):
+    def __init__(self, spi, width, height, reset, dc, cs=None, backlight=None,
+                 xstart=-1, ystart=-1):
         """
         display = st7789.ST7789(
             SPI(1, baudrate=40000000, phase=0, polarity=1),
@@ -99,8 +100,20 @@ class ST77xx:
         self.dc = dc
         self.cs = cs
         self.backlight = backlight
-        self.start_x = 0
-        self.start_y = 0
+        if xstart >= 0 and ystart >= 0:
+            self.xstart = xstart
+            self.ystart = ystart
+        elif (self.width, self.height) == (240, 240):
+            self.xstart = 0
+            self.ystart = 0
+        elif (self.width, self.height) == (135, 240):
+            self.xstart = 52
+            self.ystart = 40
+        else:
+            raise ValueError(
+                "Unsupported display. Only 240x240 and 135x240 are supported "
+                "without xstart and ystart provided"
+            )
 
     def dc_low(self):
         self.dc.off()
@@ -202,15 +215,15 @@ class ST77xx:
     def _set_columns(self, start, end):
         if start > end or end >= self.width:
             return
-        start += self.start_x
-        end += self.start_x
+        start += self.xstart
+        end += self.xstart
         self.write(ST77XX_CASET, self._encode_pos(start, end))
 
     def _set_rows(self, start, end):
         if start > end or end >= self.height:
             return
-        start += self.start_y
-        end += self.start_y
+        start += self.ystart
+        end += self.ystart
         self.write(ST77XX_RASET, self._encode_pos(start, end))
 
     def set_window(self, x0, y0, x1, y1):
